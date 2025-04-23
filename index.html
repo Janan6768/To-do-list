@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>To‑Do List with Search & Edit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+  <style>
+    /* Reset & base */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      background: #f0f2f5;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
+    }
+
+    .todo-container {
+      background: #fff;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      padding: 2rem;
+    }
+    .todo-container h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 1.75rem;
+      color: #333;
+    }
+
+    .search-bar {
+      margin-bottom: 1rem;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color .2s;
+    }
+    .search-bar input:focus {
+      outline: none;
+      border-color: #0077ff;
+    }
+
+    .todo-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .todo-form input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color .2s;
+    }
+    .todo-form input:focus {
+      outline: none;
+      border-color: #0077ff;
+    }
+    .todo-form button {
+      padding: 0 1rem;
+      background: #0077ff;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .todo-form button:hover {
+      background: #005ccc;
+    }
+
+    .todo-list {
+      list-style: none;
+    }
+    .todo-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #eee;
+      transition: background .2s;
+    }
+    .todo-list li:hover {
+      background: #f9f9f9;
+    }
+    .todo-list li:last-child {
+      border-bottom: none;
+    }
+
+    .todo-list label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      flex: 1;
+    }
+    .todo-list input[type="checkbox"] {
+      width: 1rem;
+      height: 1rem;
+      cursor: pointer;
+    }
+    .todo-list input[type="checkbox"]:checked + span {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .todo-list .actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .todo-list .actions span {
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: color .2s;
+    }
+    .todo-list .actions .edit {
+      color: #3498db;
+    }
+    .todo-list .actions .edit:hover {
+      color: #2980b9;
+    }
+    .todo-list .actions .delete {
+      color: #e74c3c;
+    }
+    .todo-list .actions .delete:hover {
+      color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <div class="todo-container">
+    <h1>My To‑Do List</h1>
+    <div class="search-bar">
+      <input type="search" id="search" placeholder="Search tasks..." />
+    </div>
+    <form class="todo-form" id="todo-form">
+      <input type="text" id="todo-input" placeholder="Add a new task..." />
+      <button type="submit" id="submit-button">Add</button>
+    </form>
+    <ul class="todo-list" id="todo-list"></ul>
+  </div>
+
+  <script>
+    const form = document.getElementById('todo-form');
+    const input = document.getElementById('todo-input');
+    const list = document.getElementById('todo-list');
+    const search = document.getElementById('search');
+    const submitButton = document.getElementById('submit-button');
+
+    let isEditing = false;
+    let currentTaskSpan = null;
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const taskText = input.value.trim();
+      if (taskText !== '') {
+        if (isEditing && currentTaskSpan) {
+          currentTaskSpan.textContent = taskText;
+          isEditing = false;
+          currentTaskSpan = null;
+          submitButton.textContent = 'Add';
+        } else {
+          addTask(taskText);
+        }
+        input.value = '';
+      }
+    });
+
+    function addTask(text) {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <label>
+          <input type="checkbox" />
+          <span>${text}</span>
+        </label>
+        <div class="actions">
+          <span class="edit">
+            <i class="fa-solid fa-pen"></i>
+          </span>
+          <span class="delete">
+              <i class="fa-solid fa-trash"></i>
+          </span>
+        </div>
+      `;
+
+      const deleteBtn = li.querySelector('.delete');
+      deleteBtn.addEventListener('click', () => {
+        list.removeChild(li);
+      });
+
+      const editBtn = li.querySelector('.edit');
+      editBtn.addEventListener('click', () => {
+        const span = li.querySelector('span');
+        input.value = span.textContent;
+        input.focus();
+        isEditing = true;
+        currentTaskSpan = span;
+        submitButton.textContent = 'Update';
+      });
+
+      list.appendChild(li);
+    }
+
+    search.addEventListener('input', function () {
+      const searchTerm = search.value.toLowerCase();
+      const items = list.querySelectorAll('li');
+      items.forEach(item => {
+        const taskText = item.querySelector('span').textContent.toLowerCase();
+        item.style.display = taskText.includes(searchTerm) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>
